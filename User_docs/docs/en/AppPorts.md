@@ -24,6 +24,8 @@ AppPorts is an application migration and linking tool designed for [macOS](https
 
 - **Badge-free Migration**: One-click migration of large apps to external drives. Locally retains only a lightweight launcher shell; Finder does not display shortcut arrows; Launchpad and macOS app menu work normally.
 - **Auto-Update Protection**: Automatically detects apps with auto-update support (Sparkle, Electron, Chrome, etc.), providing a "Locked Migration" option to prevent auto-updaters from deleting or overwriting apps on the external drive.
+- **Stub Portal Version Sync**: When external apps are updated via the App Store, the local Stub Portal's version info is automatically synced, keeping the "Open With" menu accurate.
+- **Custom Scan Directories**: Add extra local app scan directories (e.g., JetBrains Toolbox, Steam). Directories are persisted and automatically monitored for changes.
 - **Code Signature Management**: After migration, if a "Damaged" prompt appears, one-click re-signing via right-click menu. Supports backing up and restoring original signatures; auto re-signing after data directory migration.
 - **macOS 15.1+ App Store Support**: Supports installing App Store apps directly to external drives with in-place updates on the external drive.
 - **One-Click Restore**: Supports migrating apps back to local storage with automatic link removal. Automatic recovery on interrupted migration.
