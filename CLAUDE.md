@@ -15,9 +15,14 @@ This file provides guidance to AI coding assistants when working with code in th
 
 ## Project Overview
 
-AppPorts is a native macOS desktop app (Swift/SwiftUI) that migrates applications from `/Applications` to external storage while keeping a functional local "portal" via Stub Portal (launcher script). It also supports migrating data directories (`~/Library/` subfolders and dot-folders like `~/.npm`). Minimum deployment target: macOS 12.0 (Monterey).
+AppPorts is a native macOS desktop app (Swift/SwiftUI) that migrates applications from `/Applications` to external storage while keeping a functional local "portal" via Stub Portal (launcher script). It also supports migrating data directories (`~/Library/` subfolders and dot-folders like `~/.npm`) and user-selected custom folders. Minimum deployment target: macOS 12.0 (Monterey).
 
 ## Build & Test Commands
+
+If Xcode is installed outside `/Applications`, export `DEVELOPER_DIR` before running `xcodebuild`:
+```bash
+export DEVELOPER_DIR=/Volumes/hano/Applications/Xcode.app/Contents/Developer
+```
 
 **Build** (Xcode project, no SPM):
 ```bash
@@ -51,10 +56,12 @@ xcodebuild test -scheme "AppPorts" -destination 'platform=macOS,arch=arm64' \
 |------------|--------|-------------|
 | `DataDirMoverTests` | Data directory migration | When touching `DataDirMover` |
 | `DataDirScannerTests` | Data directory scanning | When touching `DataDirScanner` |
+| `CustomDirScannerTests` | Custom directory configs/scanning/validation | When touching `CustomDirModels`, `CustomDirScanner`, or custom directory UI |
 | `AppMigrationServiceTests` | App migration | When touching `AppMigrationService` |
 | `AppScannerTests` | App scanning | When touching `AppScanner` |
 | `AppLoggerTests` | Logging & diagnostics | When touching `AppLogger` |
 | `LocalizationAuditTests` | Localization | When touching user-facing copy |
+| `UpdateCheckerTests` | Release/update lookup | When touching `UpdateChecker` |
 
 ## Architecture
 
@@ -65,21 +72,24 @@ AppPorts/
 ├── AppPorts.xcodeproj/             # Xcode project (no SPM, no external deps)
 ├── AppPorts/                       # Main source
 │   ├── Appports.swift              # @main entry point + AppDelegate
-│   ├── ContentView.swift           # Main view (app migration tab, 2300+ lines)
+│   ├── ContentView.swift           # Main window and top-level tab routing
 │   ├── WelcomeView.swift           # First-launch welcome screen
 │   ├── AboutView.swift             # About dialog with GitHub contributors
 │   ├── Localizable.xcstrings       # String catalog (20+ languages)
 │   ├── Models/
 │   │   ├── AppModels.swift         # AppItem, AppMoverError, AppContainerKind
 │   │   ├── DataDirItem.swift       # DataDirItem, DataDirType, DataDirPriority
+│   │   ├── CustomDirModels.swift   # CustomDirConfig, validation, display entries
 │   │   └── AppLanguageOption.swift # Language catalog (AppLanguageCatalog)
 │   ├── Views/
-│   │   ├── DataDirsView.swift      # Data directory management tab (signing callbacks for real-path resolution)
+│   │   ├── DataDirsView.swift      # Tool dirs + app data management
+│   │   ├── CustomDirsView.swift    # User-selected folder migration tab
 │   │   ├── AppStoreSettingsView.swift # Settings sheet
 │   │   └── Components/
 │   │       ├── AppIconView.swift   # Async app icon loader
 │   │       ├── AppRowView.swift    # App list row + context menu
 │   │       ├── DataDirRowView.swift # Data dir row + tree indentation
+│   │       ├── CustomDirRowView.swift # Custom folder row
 │   │       ├── StatusBadge.swift   # Status pill badges (link/framework/type)
 │   │       ├── ProgressOverlay.swift # Migration progress overlay
 │   │       └── HelpButton.swift    # Popover help button
@@ -91,6 +101,7 @@ AppPorts/
 │       ├── AppScanner.swift        # App scanner actor (1060+ lines)
 │       ├── DataDirScanner.swift    # Data dir scanner actor (~1400 lines)
 │       ├── DataDirMover.swift      # Data dir migration actor (1003 lines)
+│       ├── CustomDirScanner.swift  # Custom folder status scanner
 │       ├── FileCopier.swift        # File copy with progress (458 lines)
 │       ├── FolderMonitor.swift     # DispatchSource filesystem watcher
 │       ├── LanguageManager.swift   # Global i18n manager + String.localized
@@ -99,10 +110,12 @@ AppPorts/
 ├── AppPortsTests/                  # Unit tests
 │   ├── AppMigrationServiceTests.swift
 │   ├── AppScannerTests.swift
+│   ├── CustomDirScannerTests.swift
 │   ├── DataDirScannerTests.swift
 │   ├── DataDirMoverTests.swift
 │   ├── AppLoggerTests.swift
-│   └── LocalizationAuditTests.swift
+│   ├── LocalizationAuditTests.swift
+│   └── UpdateCheckerTests.swift
 └── User_docs/                      # VitePress documentation site
 ```
 
@@ -111,6 +124,7 @@ AppPorts/
 | Setting | Value |
 |---------|-------|
 | Bundle ID | `com.shimoko.AppPorts` |
+| Marketing Version | `1.8.0` (`MARKETING_VERSION` in `project.pbxproj`) |
 | Deployment Target | macOS 12.0 (Monterey) |
 | Swift Version | 5.0 |
 | App Sandbox | **Disabled** (required for /Applications access) |
@@ -126,6 +140,7 @@ All heavy operations run as Swift `actor` types to ensure thread safety off the 
 - `AppScanner` — scans `/Applications` and external drive for apps
 - `DataDirScanner` — scans `~/Library/` and known dot-folders for associated data
 - `DataDirMover` — migrates/restores data directories
+- `CustomDirScanner` — scans saved custom folder migration configs
 - `FileCopier` — file copy with progress callback
 - `CodeSigner` — ad-hoc code signing with original signature backup/restore
 
@@ -138,23 +153,25 @@ All heavy operations run as Swift `actor` types to ensure thread safety off the 
     ▼         ▼
 WelcomeView  ContentView
              │
-    ┌────────┼────────┐
-    ▼        ▼        ▼
-DataDirs  Settings  AboutView
-View      View
-    │
-    ▼
+    ┌────────┼────────────┬──────────────┐
+    ▼        ▼            ▼              ▼
+ Apps UI  DataDirsView  CustomDirsView  Settings/
+                                            AboutView
+    │        │            │
+    ▼        ▼            ▼
 ┌─────────────────────────────────────────┐
 │           Services & Utils              │
 │                                         │
 │  AppMigrationService ──► FileCopier     │
 │       │                   CodeSigner    │
 │       ▼                                 │
-│  AppScanner        DataDirScanner       │
-│       │                   │             │
-│       ▼                   ▼             │
-│  AppItem (model)    DataDirMover        │
-│                     DataDirItem (model)  │
+│  AppScanner ─────────► AppItem          │
+│                                         │
+│  DataDirScanner ─────► DataDirItem      │
+│  DataDirMover ───────► FileCopier       │
+│                                         │
+│  CustomDirScanner ───► CustomDirPair    │
+│                          CustomDirConfig │
 ├─────────────────────────────────────────┤
 │        Cross-Cutting (Singletons)       │
 │  AppLogger.shared ◄── used everywhere   │
@@ -168,10 +185,11 @@ View      View
 
 1. **Launch** → `AppMoverApp` (@main) → `AppLogger.shared.logLaunchSession()` logs system diagnostics
 2. **First launch** → `WelcomeView` (feature cards, Full Disk Access permission check, language switcher)
-3. **Main app** → `ContentView` with two tabs:
+3. **Main app** → `ContentView` with three top-level tabs:
    - **Apps tab**: `HSplitView` — local apps (left) / external apps (right). Multi-select → batch migrate/link/restore
-   - **Data Dirs tab**: `DataDirsView` with two sub-tabs — Tool Dirs (`~/.npm`, `~/.m2`, etc.) and App Data (`~/Library/` subdirs)
-4. **Background**: `FolderMonitor` watches `/Applications`, external drive, and user-configured custom local dirs with 1s debounce for auto-rescan
+   - **Data Dirs tab**: `DataDirsView` with two sub-tabs — Tool Dirs (`~/.npm`, `~/.m2`, `.gradle`, `.android`, `.pub-cache`, etc.) and App Data (`~/Library/` subdirs)
+   - **Directory Migration tab**: `CustomDirsView` for arbitrary user folders under the current user's home directory
+4. **Background**: `FolderMonitor` watches `/Applications`, external drive, and user-configured custom local app scan dirs with 1s debounce for auto-rescan
 5. **Menu bar**: Language switcher (20+ languages), log management, diagnostics export
 
 ### File Responsibilities
@@ -181,9 +199,11 @@ View      View
 | File | Role |
 |------|------|
 | `Appports.swift` | `@main` entry, `AppDelegate` (prevents terminate on last window close), menu bar commands, `LanguageManager` locale injection |
-| `ContentView.swift` | Main view: app list management, migration/link/restore operations, FolderMonitor integration, debounced rescanning, custom local scan directories (persisted via UserDefaults, with per-directory FolderMonitor), Stub Portal version sync on rescan, inline helper views (`HeaderView`, `ActionFooter`, `EmptyStateView`, `TabButton`). Real-path resolution for linked apps (`resolveRealAppURL` — parses stub portal launcher script or symlink target). URL-based signing helpers (`performResign(at:bundleID:silent:)`, `performBackupSignature(at:bundleID:)`, `getBundleIdentifier(from:)`) for data directory migration signing flow |
+| `ContentView.swift` | Main view: app list management, migration/link/restore operations, top-level tab switcher (`apps`, `dataDirs`, `customDirs`), FolderMonitor integration, debounced rescanning, custom local app scan directories (persisted via UserDefaults, with per-directory FolderMonitor), Stub Portal version sync on rescan, inline helper views (`HeaderView`, `ActionFooter`, `EmptyStateView`, `TabButton`). Real-path resolution for linked apps (`resolveRealAppURL` — parses stub portal launcher script or symlink target). URL-based signing helpers (`performResign(at:bundleID:silent:)`, `performBackupSignature(at:bundleID:)`, `getBundleIdentifier(from:)`) for data directory migration signing flow |
 | `WelcomeView.swift` | First-launch screen: feature cards, Full Disk Access guidance, language switcher |
 | `AboutView.swift` | About dialog: version info, contributors (fetched from GitHub API with disk cache), links |
+| `DataDirsView.swift` | Built-in data directory UI: tool dirs and app-associated data. Passes the selected external root into scanner calls so missing local entries can surface as `待接回`. |
+| `CustomDirsView.swift` | Custom folder migration UI: two-pane local/external list, add sheet, batch migrate/relink/restore, progress overlay on the parent view. Reuses `DataDirMover` through `CustomDirEntry.dataDirItem`. |
 
 #### Models
 
@@ -191,6 +211,7 @@ View      View
 |------|-----------|
 | `AppModels.swift` | `AppItem` (name, path, status, flags: isSystemApp/isRunning/isAppStoreApp/isIOSApp/isResigned/isElectronApp/isSparkleApp/hasSelfUpdater/needsLock, size, containerKind), `AppMoverError`, `AppContainerKind` (.standaloneApp/.singleAppContainer/.appSuiteFolder) |
 | `DataDirItem.swift` | `DataDirItem` (name, path, type, priority, status, size, linkedDestination, tree children), `DataDirType` (12 types), `DataDirPriority` (.critical/.recommended/.optional), `DataDirError` |
+| `CustomDirModels.swift` | `CustomDirConfig` (local path, external base, computed external destination), `CustomDirStatus`, `CustomDirEntry`, `CustomDirPair`, `CustomDirValidator`, `CustomDirLocalOpenPanelGuard` |
 | `AppLanguageOption.swift` | `AppLanguageOption`, `AppLanguageCatalog` — 3 primary + 16 AI-translated languages |
 
 #### Services
@@ -205,9 +226,10 @@ View      View
 
 | File | Role |
 |------|------|
-| `AppScanner.swift` | Actor: scans /Applications, external dirs, and user-configured custom local dirs. Detects portal types (wholeApp/deepContents/stubPortal), system/running/AppStore/iOS/Electron/Sparkle/self-updater apps, resigned status, folder containers, deduplication by bundleID/name, macOS 15.1+ MAS external scanning. Info.plist in-memory cache (per-scan) reduces redundant disk reads. `codesign -dvv` timeout protection (10s). `calculateDirectorySize` has 500k file count safety cap. `resolveExternalRealApp(from:)` — parses stub portal launcher or symlink to find real external app for resigned status checking |
-| `DataDirScanner.swift` | Actor: scans 30+ known dotFolders (npm, maven, bun, conda, ollama, torch, whisper, cursor, vscode, docker, etc.), ~/Library/ subdirs matching by bundleID/appName, tree construction, status detection, managed link metadata verification. Bundle ID suffix extraction filters generic TLD words (app, com, org, etc.) to avoid over-matching container directories |
-| `DataDirMover.swift` | Actor: migrate (copy→delete→symlink), restore (delete symlink→copy back), create link, normalize managed link, `.appports-link-metadata.plist` management, conflict detection, interrupted migration recovery, protected path detection |
+| `AppScanner.swift` | Actor: scans /Applications, external dirs, and user-configured custom local app scan dirs. Detects portal types (wholeApp/deepContents/stubPortal), system/running/AppStore/iOS/Electron/Sparkle/self-updater apps, resigned status, folder containers, deduplication by bundleID/name, macOS 15.1+ MAS external scanning. Info.plist in-memory cache (per-scan) reduces redundant disk reads. `codesign -dvv` timeout protection (10s). `calculateDirectorySize` has 500k file count safety cap. `resolveExternalRealApp(from:)` — parses stub portal launcher or symlink to find real external app for resigned status checking |
+| `DataDirScanner.swift` | Actor: scans 30+ known dotFolders (npm, maven, Gradle, Android, Flutter/Dart, bun, conda, ollama, torch, whisper, cursor, vscode, docker, etc.), ~/Library/ subdirs matching by bundleID/appName, tree construction, status detection, managed link metadata verification. `scanKnownDotFolders(externalRootURL:)` surfaces missing local tool dirs as `待接回` when the canonical external directory exists. Bundle ID suffix extraction filters generic TLD words (app, com, org, etc.) to avoid over-matching container directories |
+| `CustomDirScanner.swift` | Actor: scans saved `CustomDirConfig` entries and returns local/external `CustomDirPair` state (`本地`, `已链接`, `待接回`, `孤立链接`, `目标冲突`, `未找到`). |
+| `DataDirMover.swift` | Actor: migrate (copy→backup local source→symlink), restore (delete symlink→copy back), create link, normalize managed link, `.appports-link-metadata.plist` management, conflict detection, interrupted migration recovery, protected path detection. Used by both built-in data directories and custom directory migration. |
 | `FileCopier.swift` | Actor: recursive directory copy preserving permissions/xattrs/timestamps, byte-level progress callbacks (5MB/50-file thresholds), symlink handling, socket skipping, EINTR retry for external storage |
 | `FolderMonitor.swift` | DispatchSource (kqueue) filesystem watcher with 1s debounce |
 | `LanguageManager.swift` | Singleton `ObservableObject`: language selection (UserDefaults), `Locale` for SwiftUI environment, `String.localized` extension with .lproj fallback chain |
@@ -239,6 +261,10 @@ AppPorts detects self-updating apps and applies lock protection (`chflags -R uch
 
 `DataDirScanner` and `DataDirMover` both track managed symlinks using `.appports-link-metadata.plist` sidecar files in the external destination. This distinguishes AppPorts-created links from pre-existing symlinks. Status values: `本地` (local), `已链接` (linked), `待接回` (awaiting relink), `现有软链` (pre-existing symlink), `待规范` (needs normalization).
 
+Known tool directories use canonical external destinations under `<externalRoot>/<DataDirType.rawValue>/<lastPathComponent>`, for example `<externalRoot>/工具目录/.gradle`. `scanKnownDotFolders(externalRootURL:)` should hide items that are missing locally and externally, but surface `待接回` when the canonical external directory already exists.
+
+Custom directory migration stores configs in `UserDefaults` under `customDirConfigs`. A config keeps the real local source and an external base directory; the actual destination is `externalBaseURL / localURL.lastPathComponent`. Local sources must be real directories under the current user's home, cannot be the home directory itself, cannot pass through symlinked path components, and cannot overlap with another managed custom directory.
+
 ### Real-Path Resolution for Linked Apps
 
 For linked apps (status `已链接`), the local path may be a Stub Portal shell or a whole-app symlink — neither is the real application package. Signing operations (resign, backup, restore) must target the real external app to take effect. Two resolution methods:
@@ -255,13 +281,15 @@ Both methods are `nonisolated` (no MainActor dependency) and support the two act
 
 - `AppItem` (in `Models/AppModels.swift`): represents an app with name, path, status, flags (isSystemApp, isRunning, isAppStoreApp, isIOSApp, isResigned), containerKind, and size info.
 - `DataDirItem` (in `Models/DataDirItem.swift`): represents a data directory with type (applicationSupport, containers, caches, dotFolder, etc.), priority, and link status.
+- `CustomDirConfig` / `CustomDirPair` (in `Models/CustomDirModels.swift`): represents a user-selected folder migration and its local/external row state.
 - `AppContainerKind`: `.standaloneApp`, `.singleAppContainer`, `.appSuiteFolder`
 
 ### UI Structure
 
 - `Appports.swift`: `@main` entry, handles `WelcomeView` → `ContentView` flow, menu bar commands (language, logging)
-- `ContentView`: main window with tab switcher (Apps / Data Dirs). Apps tab is an `HSplitView` — local apps left, external apps right
-- `DataDirsView`: data directory management tab
+- `ContentView`: main window with top-level tab switcher (Apps / Data Dirs / Directory Migration). Apps tab is an `HSplitView` — local apps left, external apps right
+- `DataDirsView`: built-in data directory tab with Tool Dirs and App Data sub-tabs
+- `CustomDirsView`: directory migration tab for arbitrary user folders, with local and external panes
 
 ### Localization System
 
@@ -270,7 +298,9 @@ Both methods are `nonisolated` (no MainActor dependency) and support the two act
 - SwiftUI `Text("key")` literals are acceptable for `LocalizedStringKey` APIs
 - AppKit/imperative strings must use `.localized` explicitly
 - Language catalog in `AppLanguageCatalog` (in `Models/AppLanguageOption.swift`) — the single source of truth for supported languages
-- `LocalizationAuditTests` validates translation coverage
+- `LocalizationAuditTests` validates translation coverage, placeholder consistency, absence of empty keys, absence of stale string catalog entries, and active `.localized` / `NSLocalizedString` references
+- Hidden SwiftUI controls must still use meaningful localized labels; empty labels can create an empty string catalog key
+- When adding new user-facing fields, status values, settings, alerts, errors, or labels, ask the maintainer whether to complete translations for all supported languages in the same change. If not, document the intended fallback/follow-up clearly.
 
 ### Global Singletons
 
@@ -280,14 +310,14 @@ Both methods are `nonisolated` (no MainActor dependency) and support the two act
 
 ### Real-time Monitoring
 
-`FolderMonitor` uses `DispatchSource` (kqueue) to watch `/Applications` and the external drive, triggering automatic re-scans on filesystem changes.
+`FolderMonitor` uses `DispatchSource` (kqueue) to watch `/Applications`, the external drive, and custom local app scan dirs, triggering automatic re-scans on filesystem changes.
 
 ### Key Architectural Patterns
 
 - **Actor isolation**: all file operations are actor-isolated for thread safety
 - **MVVM-ish**: views directly call service/utility methods; no formal ViewModel layer (except `ContributorsViewModel` in AboutView)
 - **@AppStorage**: persistent settings (allowAppStoreMigration, allowIOSAppMigration, autoResignEnabled, LogEnabled, MaxLogSizeBytes)
-- **UserDefaults**: external drive path, language selection, log configuration, custom local scan paths (`customLocalScanPaths`)
+- **UserDefaults**: external drive path, language selection, log configuration, custom local app scan paths (`customLocalScanPaths`), custom directory migration configs (`customDirConfigs`)
 - **Progress callbacks**: `FileCopier.ProgressHandler` is `@Sendable (Progress) async -> Void` for real-time UI updates from actor contexts
 - **Managed link metadata**: `.appports-link-metadata.plist` sidecar files for authoritative link tracking
 - **Real-path signing for linked apps**: signing operations (resign, backup, restore) always resolve to the real external app path via `resolveRealAppURL`/`resolveExternalRealApp`, never the local stub shell. This ensures signature changes take effect on the actual app package.
@@ -301,7 +331,7 @@ Both methods are `nonisolated` (no MainActor dependency) and support the two act
 - **PR smoke check** (`build.yml`): compilation-only build in Release mode. **Blocking.**
 - **Data directory tests** (`build.yml`): runs `DataDirMoverTests` + `DataDirScannerTests`. Advisory (non-blocking).
 - **Localization audit** (`build.yml`): runs `LocalizationAuditTests`. Advisory (non-blocking).
-- **Post-merge** (`post-merge-validation.yml`): full data directory tests + localization audit + Release build. Runs on push to `main`/`develop`.
+- **Post-merge** (`post-merge-validation.yml`): `DataDirMoverTests` + `DataDirScannerTests` + localization audit + Release build. Runs on push to `main`/`develop`.
 
 ## Branch Convention
 
@@ -331,7 +361,7 @@ When reporting a bug or proposing a feature:
 
 - **Vibe Coding is accepted**, but code quality and correctness are the contributor's responsibility
 - **Cross-validate AI-generated code** with multiple models when possible
-- **Core features** (migration strategy, data directory migration, code signing) must be discussed in an Issue first
+- **Discuss large changes first**: major code churn, broad logic changes, migration strategy changes, data directory migration changes, and code signing changes should be discussed in GitHub Issues before implementation: https://github.com/wzh4869/AppPorts/issues
 - **Never hardcode UI strings** — use i18n via `Localizable.xcstrings`
 - **Never use `print`** — use `AppLogger.shared` for all logging
 - **Always handle rollback** — migration operations must include rollback mechanisms on failure
