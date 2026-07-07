@@ -16,6 +16,10 @@ Mindestens macOS 12.0 (Monterey). macOS 15.1 (Sequoia) und neuer unterstützen z
 
 ## App-Migration
 
+### Wie scanne ich Apps außerhalb von /Applications?
+
+Klicken Sie im Header „Mac Lokale Apps" auf den „+"-Button, um zusätzliche Scan-Verzeichnisse hinzuzufügen. Das ist nützlich für Tools wie JetBrains Toolbox und Steam, die Apps an benutzerdefinierten Orten installieren. Hinzugefügte Verzeichnisse werden automatisch gespeichert und auf Änderungen überwacht. Nach dem Hinzufügen zeigt der Header die Anzahl der benutzerdefinierten Verzeichnisse; öffnen Sie dieses Zählmenü, um hinzugefügte Verzeichnisse anzuzeigen oder zu entfernen.
+
 ### Was ist, wenn die App nach der Migration nicht geöffnet werden kann?
 
 1. Bestätigen Sie, dass der externe Speicher verbunden und zugänglich ist
@@ -54,6 +58,10 @@ Hängt vom App-Typ ab:
 **macOS 15.1+**: In den App Store-Einstellungen „Große Apps auf ein externes Laufwerk herunterladen und installieren" aktivieren und dasselbe externe Speichergerät wie AppPorts auswählen.
 
 **macOS <15.1**: In den AppPorts-Einstellungen „App Store-App-Migration" aktivieren. Nach manueller Migration erfordern App-Updates eine Re-Migration.
+
+### Warum warnt AppPorts vor „geschützten Apps" vor der Migration?
+
+App Store-Apps oder root-eigene Apps sind meist durch macOS-Berechtigungen geschützt. AppPorts kann die lokale Kopie daher möglicherweise nicht automatisch löschen oder ersetzen. Wenn diese Warnung erscheint, ist es sicherer, die App zuerst manuell im Finder in den externen Speicher zu verschieben (macOS fragt nach einem Administratorkennwort), dann zu AppPorts zurückzukehren und einen lokalen Link zur externen App zu erstellen. Sie können die automatische Migration trotzdem fortsetzen, sie kann aber wegen unzureichender Berechtigungen fehlschlagen.
 
 ### Die Migration ist langsam/hängt. Was tun?
 

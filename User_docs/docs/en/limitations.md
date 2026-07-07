@@ -21,6 +21,7 @@ outline: deep
 |---------|:---:|:---:|
 | App Migration (Stub Portal) | ✓ | ✓ |
 | Data Directory Migration | ✓ | ✓ |
+| Directory Migration (custom folders) | ✓ | ✓ |
 | Code Signature Management | ✓ | ✓ |
 | App Store App Migration to External Drive | ✗ | ✓ |
 | App Store App In-Place Update on External Drive | ✗ | ✓ |
@@ -43,6 +44,10 @@ macOS versions before 15.1 (Sequoia) do not support App Store app installation t
 | iOS app (Mac version) | ✓ | ✓ | ✓ | Uses iOS Stub Portal |
 | System apps | ✗ | — | — | SIP protection; cannot be migrated |
 
+::: warning Protected App Migration
+App Store apps or root-owned apps may be blocked by macOS permissions, preventing AppPorts from automatically deleting or replacing the local copy. When the protected-app warning appears, move the app to external storage manually in Finder first, then return to AppPorts and create a local link.
+:::
+
 ::: tip About Pending Move Out
 "Pending Move Out" depends on comparable app versions and a reliable same-app match. AppPorts matches by Bundle ID first, then by normalized app name when necessary. Missing or non-comparable versions, or same-name apps with different Bundle IDs, will not show this state.
 :::
@@ -62,6 +67,11 @@ macOS versions before 15.1 (Sequoia) do not support App Store app installation t
 | `~/Library/Application Scripts/` | ✓ | Low — extension scripts |
 | `~/Library/Saved Application State/` | ✓ | Low — window state restoration |
 | `~/.npm`, `~/.m2` etc. dot-folder | ✓ | Low — development tool caches |
+| Custom folders under the user's home directory | ✓ | Depends on contents — close apps or tools that are actively writing before migration |
+
+::: warning Custom Directory Scope
+Directory Migration is for real folders under the user's home directory. It cannot select files, symlinks, paths inside the external target, system directories, or paths that overlap with already managed items.
+:::
 
 ::: warning Destination Conflicts
 Data directory migration does not take over an external directory merely because its size is similar. AppPorts only continues automatic recovery when AppPorts metadata fully matches the current task; otherwise it treats the existing real directory as a conflict and stops.

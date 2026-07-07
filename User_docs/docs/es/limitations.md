@@ -21,6 +21,7 @@ outline: deep
 |----------------|:---:|:---:|
 | Migración de Apps (Stub Portal) | ✓ | ✓ |
 | Migración de Directorios de Datos | ✓ | ✓ |
+| Migración de Directorios (carpetas personalizadas) | ✓ | ✓ |
 | Gestión de Firma de Código | ✓ | ✓ |
 | Migración de Apps App Store a Disco Externo | ✗ | ✓ |
 | Actualización In Situ de Apps App Store en Disco Externo | ✗ | ✓ |
@@ -43,6 +44,10 @@ Las versiones de macOS anteriores a 15.1 (Sequoia) no soportan la instalación d
 | App iOS (versión Mac) | ✓ | ✓ | ✓ | Usa iOS Stub Portal |
 | Apps del sistema | ✗ | — | — | Protección SIP; no se pueden migrar |
 
+::: warning ⚠️ Migración de Apps Protegidas
+Las apps de App Store o propiedad de root pueden quedar bloqueadas por permisos de macOS, impidiendo que AppPorts elimine o sustituya automáticamente la copia local. Cuando aparezca la advertencia de app protegida, mueva primero la app al almacenamiento externo manualmente en Finder y luego vuelva a AppPorts para crear un enlace local.
+:::
+
 ### Por Tipo de Directorio de Datos
 
 | Tipo de Directorio de Datos | Migración | Riesgo |
@@ -58,6 +63,11 @@ Las versiones de macOS anteriores a 15.1 (Sequoia) no soportan la instalación d
 | `~/Library/Application Scripts/` | ✓ | Bajo — scripts de extensiones |
 | `~/Library/Saved Application State/` | ✓ | Bajo — restauración de estado de ventanas |
 | `~/.npm`, `~/.m2` etc. dot-folder | ✓ | Bajo — cachés de herramientas de desarrollo |
+| Carpetas personalizadas bajo el directorio de inicio del usuario | ✓ | Depende del contenido — cierre apps o herramientas que estén escribiendo antes de migrar |
+
+::: warning ⚠️ Alcance de Directorios Personalizados
+La Migración de Directorios está pensada para carpetas reales bajo el directorio de inicio del usuario. No puede seleccionar archivos, enlaces simbólicos, rutas dentro del destino externo, directorios del sistema ni rutas que se solapen con elementos ya gestionados.
+:::
 
 ## Contenido No Migrable
 

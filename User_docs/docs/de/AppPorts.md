@@ -30,6 +30,7 @@ AppPorts ist ein Anwendungsmigrations- und Verknüpfungstool für [macOS](https:
 - **macOS 15.1+ App Store-Unterstützung**: Unterstützt die Installation von App Store-Apps direkt auf externe Laufwerke mit In-Place-Updates auf dem externen Laufwerk.
 - **Ein-Klick-Wiederherstellung**: Unterstützt die Rückmigration von Apps in den lokalen Speicher mit automatischer Linkentfernung. Automatische Wiederherstellung bei unterbrochener Migration.
 - **Datenverzeichnisverwaltung**: Unterstützt die Migration von App-Datenverzeichnissen (`~/Library/`-Unterverzeichnisse, `~/.npm` usw.) in den externen Speicher, mit Baumansicht-Gruppierung, Suche und Sortierung.
+- **Verzeichnismigration**: Verschiebt beliebige echte Ordner unter dem Benutzer-Home in externen Speicher, nützlich für große Projekte, Modelle, Asset-Bibliotheken und Tool-Caches, mit Neuverlinkung, Wiederherstellung und Pfadüberschneidungsprüfung.
 
 ## Glossar
 

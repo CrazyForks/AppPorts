@@ -18,7 +18,7 @@ Minimum support is macOS 12.0 (Monterey). macOS 15.1 (Sequoia) and later additio
 
 ### How do I scan apps outside /Applications?
 
-Click the "+" button in the "Mac Local Apps" header to add extra scan directories. Useful for tools like JetBrains Toolbox and Steam that install apps in custom locations. Added directories are saved automatically and monitored for changes.
+Click the "+" button in the "Mac Local Apps" header to add extra scan directories. Useful for tools like JetBrains Toolbox and Steam that install apps in custom locations. Added directories are saved automatically and monitored for changes. After adding directories, the header shows the custom directory count; open that count menu to view or remove added directories.
 
 ### What if the app won't open after migration?
 
@@ -68,6 +68,10 @@ Not blindly. AppPorts only auto-cleans the external target when the app is in "P
 **macOS 15.1+**: In App Store settings, enable "Download and install large apps to an external drive," selecting the same external storage as AppPorts.
 
 **macOS <15.1**: In AppPorts settings, enable "App Store App Migration." After manual migration, app updates require re-migration.
+
+### Why does AppPorts warn about "Protected Apps" before migration?
+
+App Store apps or root-owned apps are usually protected by macOS permissions, so AppPorts may not be able to delete or replace the local copy automatically. When you see this warning, the safer path is to move the app to external storage manually in Finder first (macOS will ask for an administrator password), then return to AppPorts and create a local link for the external app. You can still continue automatic migration, but it may fail with insufficient permissions.
 
 ### Migration is slow/stuck. What to do?
 

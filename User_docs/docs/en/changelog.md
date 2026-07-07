@@ -4,12 +4,15 @@ outline: deep
 
 # Changelog
 
-## v1.7.1
+## v1.8.0
 
 ### New Features
 
 - Added custom local scan directories: the "Mac Local Apps" header now has a "+" button to add extra local app scan directories. Useful for tools like JetBrains Toolbox and Steam that install apps outside `/Applications`. Added directories are persisted and automatically monitored for changes (#48).
 - Added Stub Portal version sync: when an external app is updated via the App Store, the local Stub Portal's version info is now automatically synced and the macOS Launch Services cache is refreshed. The "Open With" menu no longer shows stale version numbers (#50).
+- Added tool directory detection for Gradle (`~/.gradle`), Android development data (`~/.android`), and Flutter/Dart Pub cache (`~/.pub-cache`) (#49).
+- Added Directory Migration: add arbitrary user folders in the "Directory Migration" tab, migrate large projects, models, asset libraries, or tool caches to external storage, and relink or restore them later (#54).
+- Added protected-app migration warning: before migrating App Store apps or root-owned apps, AppPorts warns that automatic deletion or replacement may fail due to permissions and suggests manually moving the app in Finder before creating a link (#55).
 
 ### Improvements
 
@@ -18,12 +21,18 @@ outline: deep
 - Directory size calculation safety cap: a 500,000 file count limit has been added to recursive size calculations, preventing runaway enumeration on Electron and other large app bundles.
 - Scan trace logging: per-app TRACE logging added to the scan loop, making it easier to identify which app is slow or stuck during scanning.
 - More precise data directory matching: fixed bundle ID suffix extraction to filter generic TLD words like `app`, `com`, `org`. Previously, bundle IDs like `cn.trae.app` would trigger scanning of 720+ unrelated system containers.
+- More complete tool-directory relink detection: when a local tool directory is missing but a managed directory still exists at the canonical external-storage location, AppPorts shows it as "Needs Relinking"; switching external storage refreshes tool-directory state automatically.
+- Improved localization and accessibility: app, data-directory, and custom-directory statuses, sort/filter labels, settings toggles, and status badges now follow the selected language more consistently and expose clearer accessibility labels.
+- App sizes now use a session-level cache, reducing cases where sizes return to "Calculating" or disappear after a refresh (#55).
+- Safer data-directory rollback: before creating the link, AppPorts renames the local source to a hidden safety backup. If link creation or backup cleanup fails, it keeps the local backup and external copy where possible to avoid losing both sides (#54).
 
 ### Fixes
 
 - Fixed Trae and similar apps scanning extremely slowly — the generic suffix `app` from the bundle ID caused `~/Library/Containers/` to scan hundreds of unrelated directories.
 - Fixed local Stub Portal version info not updating after external apps are updated via the App Store, causing the "Open With" menu to show stale versions.
 - Fixed the refresh button not triggering Stub Portal version sync.
+- Fixed data-directory relinking or normalization potentially treating an external regular file as a directory; regular files are now rejected and left untouched.
+- Fixed multi-line dialog bodies falling back to Chinese in some languages, completed Russian UI translations, and localized the Stub Portal "external storage not connected" system dialog based on the system language (#55).
 
 ## v1.7.0
 

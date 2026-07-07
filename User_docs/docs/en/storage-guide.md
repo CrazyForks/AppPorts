@@ -67,4 +67,5 @@ AppPorts' external storage usage after migration depends on the size of migrated
 - External storage must remain connected; migrated apps and data directories cannot be used offline
 - Regularly back up data on external storage
 - Avoid unplugging external storage during migration
+- Do not manually place regular files at AppPorts external data-directory target paths; AppPorts only relinks or normalizes real directories
 - If external storage fails, you can move apps back to local via AppPorts

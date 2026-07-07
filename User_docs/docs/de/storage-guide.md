@@ -67,4 +67,5 @@ Die Nutzung des externen Speichers durch AppPorts nach der Migration hängt von 
 - Externer Speicher muss verbunden bleiben; migrierte Apps und Datenverzeichnisse können offline nicht genutzt werden
 - Sichern Sie regelmäßig Daten auf dem externen Speicher
 - Vermeiden Sie das Abstecken des externen Speichers während der Migration
+- Legen Sie keine normalen Dateien manuell an AppPorts-Zielpfaden für externe Datenverzeichnisse ab; AppPorts verlinkt oder normalisiert nur echte Verzeichnisse
 - Fällt der externe Speicher aus, können Sie Apps über AppPorts zurück in den lokalen Speicher verschieben

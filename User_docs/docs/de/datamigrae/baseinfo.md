@@ -14,8 +14,9 @@ Die Datenverzeichnismigration verwendet die **Whole Symlink**-Strategie:
 
 1. Das gesamte ursprüngliche lokale Verzeichnis in den externen Speicher kopieren
 2. Verwaltete Link-Metadaten (`.appports-link-metadata.plist`) im externen Verzeichnis schreiben
-3. Das ursprüngliche lokale Verzeichnis löschen
+3. Das ursprüngliche lokale Verzeichnis auf demselben Volume in eine versteckte Sicherheitskopie umbenennen
 4. Einen symbolischen Link am ursprünglichen Pfad erstellen, der auf die externe Kopie verweist
+5. Die lokale Sicherheitskopie nach erfolgreicher Link-Erstellung bereinigen
 
 ```
 ~/Library/Application Support/SomeApp
@@ -33,11 +34,13 @@ flowchart TD
     C -->|Kein Konflikt| E[In externen Speicher kopieren]
     D --> E
     E --> F[Verwaltete Link-Metadaten schreiben]
-    F --> G[Lokales Verzeichnis löschen]
-    G -->|Fehlgeschlagen| H[Rollback: externe Kopie löschen]
+    F --> G[Lokales Verzeichnis in Sicherheitskopie umbenennen]
+    G -->|Fehlgeschlagen| H[Externe Kopie behalten und stoppen]
     G -->|Erfolgreich| I[Symbolischen Link erstellen]
-    I -->|Fehlgeschlagen| J[Notfall-Rollback: Zurück in den lokalen Speicher kopieren]
-    I -->|Erfolgreich| K[Migration abgeschlossen]
+    I -->|Fehlgeschlagen| J[Lokale Sicherheitskopie wiederherstellen und externe Kopie behalten]
+    I -->|Erfolgreich| K[Lokale Sicherheitskopie bereinigen]
+    K -->|Erfolgreich| L[Migration abgeschlossen]
+    K -->|Fehlgeschlagen| M[Migration abgeschlossen; Sicherheitskopie bleibt erhalten]
 ```
 
 ## Verwaltete Link-Metadaten
@@ -53,6 +56,10 @@ AppPorts schreibt eine `.appports-link-metadata.plist`-Datei im externen Verzeic
 | `dataDirType` | Datenverzeichnistyp |
 
 Diese Metadaten werden beim Scannen verwendet, um von AppPorts verwaltete Links von benutzererstellten symbolischen Links zu unterscheiden, und unterstützen die automatische Wiederherstellung bei unterbrochener Migration.
+
+Die automatische Wiederherstellung verwendet strikte Übereinstimmung. Wenn das externe Ziel bereits existiert, behandelt AppPorts es nur als wiederherstellbar, wenn `schemaVersion`, `managedBy`, `sourcePath`, `destinationPath` und `dataDirType` mit dem aktuellen Vorgang übereinstimmen. Ein echtes Verzeichnis ohne passende Metadaten gilt als Konflikt; AppPorts stellt nicht allein aufgrund ähnlicher Verzeichnisgrößen wieder her und übernimmt es auch nicht.
+
+Neuverlinkung und Normalisierung arbeiten nur mit Verzeichnissen. AppPorts weist externe normale Dateien zurück, statt sie als Datenverzeichnisse neu zu verlinken oder zu verschieben. So wird verhindert, dass eine Datei durch einen lokalen symbolischen Link ersetzt wird.
 
 ## Unterstützte Datenverzeichnistypen
 
@@ -85,7 +92,8 @@ Falls das Kopieren fehlschlägt, wird automatisch der symbolische Link wiederher
 Jeder kritische Schritt im Migrationsprozess enthält Rollback-Mechanismen:
 
 - **Kopierfehler**: Keine weiteren Aktionen; bereinigen der kopierten externen Dateien
-- **Fehler beim Löschen des lokalen Verzeichnisses**: Externe Kopie löschen, ursprünglichen Zustand wiederherstellen
-- **Fehler beim Erstellen des symbolischen Links**: Daten von extern zurück in den lokalen Speicher kopieren, externe Kopie löschen
+- **Fehler beim Verschieben in die lokale Sicherheitskopie**: Migration stoppt und behält die externe Kopie; die lokale Quelle wird nicht gelöscht
+- **Fehler beim Erstellen des symbolischen Links**: AppPorts stellt nach Möglichkeit die lokale Sicherheitskopie am ursprünglichen Pfad wieder her und behält die externe Kopie, damit nicht beide Seiten verloren gehen
+- **Fehler beim Bereinigen der Sicherheitskopie**: Die Migration gilt als abgeschlossen; ein lokaler Ordner `.appports-migration-backup-*` bleibt erhalten und kann nach Prüfung manuell entfernt werden
 
 Dieses Design stellt sicher, dass bei einem Fehler in jeder Phase kein Datenverlust auftritt und der Systemzustand konsistent bleibt.

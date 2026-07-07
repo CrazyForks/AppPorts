@@ -67,4 +67,5 @@ El uso de almacenamiento externo de AppPorts después de la migración depende d
 - El almacenamiento externo debe permanecer conectado; las aplicaciones y directorios de datos migrados no pueden usarse sin conexión
 - Haga copias de seguridad periódicas de los datos en el almacenamiento externo
 - Evite desconectar el almacenamiento externo durante la migración
+- No coloque manualmente archivos normales en las rutas destino de directorios de datos externos de AppPorts; AppPorts solo revincula o normaliza directorios reales
 - Si el almacenamiento externo falla, puede mover las apps de vuelta a local vía AppPorts

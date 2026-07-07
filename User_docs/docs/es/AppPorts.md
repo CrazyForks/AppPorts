@@ -30,6 +30,7 @@ AppPorts es una herramienta de migración y vinculación de aplicaciones diseña
 - **Soporte App Store en macOS 15.1+**: Admite la instalación de aplicaciones de App Store directamente en discos externos con actualizaciones in situ en el disco externo.
 - **Restauración con Un Solo Clic**: Admite la migración de aplicaciones de vuelta al almacenamiento local con eliminación automática de enlaces. Recuperación automática en caso de migración interrumpida.
 - **Gestión del Directorio de Datos**: Admite la migración de directorios de datos de aplicaciones (subdirectorios de `~/Library/`, `~/.npm`, etc.) al almacenamiento externo, con vista de árbol, búsqueda y ordenación.
+- **Migración de Directorios**: Mueva carpetas reales arbitrarias bajo el directorio home del usuario al almacenamiento externo, útil para proyectos grandes, modelos, bibliotecas de recursos y cachés de herramientas, con revinculación, restauración y validación de solapamiento de rutas.
 
 ## Glosario
 

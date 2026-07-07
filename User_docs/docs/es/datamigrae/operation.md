@@ -35,7 +35,28 @@ AppPorts puede detectar automáticamente dot-folders creados por herramientas de
 2. La página lista todos los directorios de herramientas detectados con sus tamaños
 3. Cada directorio muestra un marcador de prioridad (recommended/optional) y estado
 
+Si falta un directorio de herramienta local pero la ubicación canónica del almacenamiento externo seleccionado todavía contiene un directorio gestionado por AppPorts, el elemento aparece como "Necesita Revinculación". Al cambiar de almacenamiento externo, AppPorts vuelve a escanear los directorios de herramientas y actualiza este estado. Los archivos normales no se tratan como directorios revinculables.
+
 Para la lista completa soportada, consulte [Detección de Directorios de Herramientas](/es/datamigrae/tools).
+
+## Migración de Directorios (Carpetas Personalizadas)
+
+La pestaña "Migración de Directorios" migra carpetas de usuario arbitrarias. Es útil para proyectos grandes, modelos, bibliotecas de recursos o cachés de herramientas que desea mover al almacenamiento externo.
+
+1. Cambie a "Migración de Directorios" en la ventana principal
+2. Haga clic en el botón "+" del encabezado "Carpetas Locales"
+3. Elija la carpeta local a migrar y luego el directorio raíz de destino en el almacenamiento externo
+4. AppPorts usa `raíz destino/nombre de carpeta local` como destino externo, guarda la configuración e inicia la migración
+
+Para evitar copias recursivas, migración de directorios del sistema o tomar control de una ruta incorrecta, se aplican estas comprobaciones:
+
+- La carpeta local debe estar dentro del directorio home del usuario actual y no puede ser todo el home
+- La ruta local y sus rutas superiores no deben ser enlaces simbólicos
+- La carpeta local no debe solaparse con un directorio de datos o entrada de migración ya gestionada
+- La raíz de destino externa debe ser una carpeta y no debe estar dentro del home del usuario actual
+- El destino externo final no debe estar dentro de la carpeta local, y la carpeta local no debe estar dentro del destino externo final
+
+Después de la migración, el panel local muestra el estado de la ruta original y el panel externo muestra el estado de la copia externa. Seleccione elementos en el panel externo para "Revincular carpeta" o "Restaurar carpeta". Quitar una configuración solo la elimina de la lista de migración; no borra datos reales automáticamente.
 
 ## Operaciones de Migración
 
@@ -109,7 +130,7 @@ El directorio es gestionado por AppPorts, pero la ruta externa no está en la ub
 
 ### Necesita Revinculación
 
-Los datos del almacenamiento externo aún existen, pero el enlace simbólico local se perdió. Haga clic en "Revincular"; AppPorts recreará el enlace simbólico.
+El directorio de datos aún existe en el almacenamiento externo, pero el enlace simbólico local se perdió. Haga clic en "Revincular"; AppPorts recreará el enlace simbólico. La revinculación solo se aplica cuando el destino externo sigue siendo un directorio. Si un archivo normal ocupa el destino externo, AppPorts detiene la operación y conserva el archivo.
 
 ### Enlace Suave Existente
 

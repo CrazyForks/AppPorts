@@ -67,4 +67,5 @@ L'utilisation du stockage externe d'AppPorts après la migration dépend de la t
 - Le stockage externe doit rester connecté ; les applications et répertoires de données migrés ne peuvent pas être utilisés hors ligne
 - Sauvegarder régulièrement les données sur le stockage externe
 - Éviter de débrancher le stockage externe pendant la migration
+- Ne placez pas manuellement de fichiers ordinaires dans les chemins cibles des répertoires de données externes d'AppPorts ; AppPorts ne relie ou ne normalise que de vrais répertoires
 - Si le stockage externe tombe en panne, vous pouvez déplacer les applications vers le local via AppPorts

@@ -35,7 +35,28 @@ AppPorts can automatically detect dot-folders created by common development tool
 2. The page lists all detected tool directories with their sizes
 3. Each directory shows a priority badge (recommended/optional) and status
 
+If a local tool directory is missing but the canonical location on the selected external storage still contains an AppPorts-managed directory, the item appears as "Needs Relinking". Switching external storage triggers a new scan and refreshes this state. Regular files are not treated as relinkable directories.
+
 For the full supported list, see [Tool Directory Detection](/en/datamigrae/tools).
+
+## Directory Migration (Custom Folders)
+
+The "Directory Migration" tab migrates arbitrary user folders. It is useful for large projects, model files, asset libraries, or tool caches that you want to move to external storage.
+
+1. Switch to "Directory Migration" in the main window
+2. Click the "+" button in the "Local Folders" header
+3. Choose the local folder to migrate, then choose the target root directory on external storage
+4. AppPorts uses `target root/local folder name` as the external destination, saves the configuration, and starts migration
+
+To avoid recursive copies, system-directory migration, or taking over the wrong path, directory migration applies these checks:
+
+- The local folder must be under the current user's home directory and cannot be the entire home directory
+- The local path and its parent path must not be symbolic links
+- The local folder must not overlap with an already managed data directory or directory-migration entry
+- The external target root must be a folder and must not be inside the current user's home directory
+- The final external target must not be inside the local folder, and the local folder must not be inside the final external target
+
+After migration, the local pane shows the original path status and the external pane shows the external copy status. Select items in the external pane to "Relink Folder" or "Restore Folder". Removing a configuration only removes it from the directory-migration list; it does not delete real data automatically.
 
 ## Migration Operations
 
@@ -111,7 +132,7 @@ The directory is managed by AppPorts, but the external path is not at the canoni
 
 ### Needs Relinking
 
-External storage data still exists, but the local symbolic link is lost. Click "Relink"; AppPorts will recreate the symbolic link.
+The data directory still exists on external storage, but the local symbolic link is lost. Click "Relink"; AppPorts will recreate the symbolic link. Relinking only applies when the external target is still a directory. If a regular file occupies the external target, AppPorts stops and leaves the file untouched.
 
 ### Existing Soft Link
 

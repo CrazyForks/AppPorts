@@ -4,12 +4,15 @@ outline: deep
 
 # Journal des modifications
 
-## v1.7.1
+## v1.8.0
 
 ### Nouveautés
 
 - Répertoires de scan locaux personnalisés : l'en-tête « Mac Apps Locales » dispose maintenant d'un bouton « + » pour ajouter des répertoires de scan d'applications supplémentaires. Utile pour les outils comme JetBrains Toolbox et Steam qui installent des applications en dehors de `/Applications`. Les répertoires ajoutés sont sauvegardés et automatiquement surveillés (#48).
 - Synchronisation de version Stub Portal : lorsqu'une application externe est mise à jour via l'App Store, les informations de version du Stub Portal local sont automatiquement synchronisées et le cache macOS Launch Services est actualisé. Le menu « Ouvrir avec » n'affiche plus de numéros de version obsolètes (#50).
+- Détection de répertoires d'outils pour Gradle (`~/.gradle`), les données de développement Android (`~/.android`) et le cache Flutter/Dart Pub (`~/.pub-cache`) (#49).
+- Migration de répertoires : ajoutez des dossiers utilisateur arbitraires dans l'onglet « Migration de répertoires », migrez de grands projets, modèles, bibliothèques de ressources ou caches d'outils vers le stockage externe, puis reliez-les ou restaurez-les (#54).
+- Avertissement pour les applications protégées : avant de migrer des apps App Store ou appartenant à root, AppPorts avertit que la suppression ou le remplacement automatique peut échouer faute de permissions et suggère de déplacer d'abord l'app manuellement dans Finder avant de créer un lien (#55).
 
 ### Améliorations
 
@@ -18,12 +21,18 @@ outline: deep
 - Limite de sécurité pour le calcul de taille : une limite de 500 000 fichiers a été ajoutée aux calculs de taille récursifs.
 - Journalisation de trace de scan : journalisation TRACE par application ajoutée à la boucle de scan.
 - Correspondance plus précise des répertoires de données : les mots TLD génériques comme `app`, `com`, `org` sont maintenant filtrés.
+- Détection de re-liaison des répertoires d'outils plus complète : si le répertoire local est absent mais qu'un répertoire géré existe encore à l'emplacement canonique du stockage externe, AppPorts l'affiche comme « Nécessite une re-liaison » ; changer de stockage externe actualise automatiquement cet état.
+- Localisation et accessibilité améliorées : les statuts des applications, répertoires de données et répertoires personnalisés, les libellés de tri/filtre, les interrupteurs de réglages et les badges de statut suivent plus systématiquement la langue choisie et exposent des libellés d'accessibilité plus clairs.
+- Les tailles d'apps utilisent maintenant un cache au niveau de la session, ce qui réduit les retours à « Calcul en cours » ou les pertes de taille après actualisation (#55).
+- Rollback plus sûr pour les migrations de données : avant de créer le lien, AppPorts renomme la source locale en sauvegarde cachée. Si la création du lien ou le nettoyage de la sauvegarde échoue, il conserve autant que possible la sauvegarde locale et la copie externe (#54).
 
 ### Corrections
 
 - Correction : Trae et applications similaires scannées extrêmement lentement.
 - Correction : les informations de version du Stub Portal n'étaient pas mises à jour après les mises à jour App Store.
 - Correction : le bouton d'actualisation ne déclenchait pas la synchronisation de version.
+- Correction : la re-liaison ou la normalisation des répertoires de données pouvait traiter un fichier ordinaire externe comme un répertoire ; les fichiers ordinaires sont maintenant rejetés et conservés.
+- Correction : les corps de boîtes de dialogue multilignes pouvaient revenir au chinois dans certaines langues ; les traductions russes de l'interface ont été complétées et la boîte de dialogue système Stub Portal « stockage externe non connecté » suit maintenant la langue du système (#55).
 
 ## v1.7.0
 

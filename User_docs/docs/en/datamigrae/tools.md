@@ -22,6 +22,9 @@ AppPorts can automatically detect data directories (dot-folders) created by comm
 |------|------|----------|-------------|
 | npm | `~/.npm` | recommended | Node.js package manager local cache |
 | Maven | `~/.m2` | recommended | Java Maven dependency repository |
+| Gradle | `~/.gradle` | recommended | Gradle build cache, Wrapper, and dependency data |
+| Android Development Data | `~/.android` | recommended | Android, ADB, and emulator configuration and cache data |
+| Flutter/Dart Pub | `~/.pub-cache` | recommended | Dart and Flutter Pub package cache |
 | Bun | `~/.bun` | recommended | Bun JavaScript runtime and cache |
 | Conda | `~/.conda` | recommended | Anaconda/Miniconda environment data |
 | Composer | `~/.composer` | optional | PHP Composer global packages |

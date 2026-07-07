@@ -35,7 +35,28 @@ AppPorts peut détecter automatiquement les dot-folders créés par les outils d
 2. La page liste tous les répertoires d'outils détectés avec leurs tailles
 3. Chaque répertoire affiche un badge de priorité (recommended/optional) et un statut
 
+Si un répertoire d'outil local est absent mais que l'emplacement canonique du stockage externe sélectionné contient encore un répertoire géré par AppPorts, l'élément apparaît comme « Nécessite une re-liaison ». Changer de stockage externe déclenche une nouvelle analyse et actualise cet état. Les fichiers ordinaires ne sont pas traités comme des répertoires pouvant être reliés.
+
 Pour la liste complète supportée, voir [Détection des répertoires d'outils](/fr/datamigrae/tools).
+
+## Migration de répertoires (dossiers personnalisés)
+
+L'onglet « Migration de répertoires » migre des dossiers utilisateur arbitraires. Il convient aux grands projets, modèles, bibliothèques de ressources ou caches d'outils à déplacer vers le stockage externe.
+
+1. Ouvrir « Migration de répertoires » dans la fenêtre principale
+2. Cliquer sur le bouton « + » dans l'en-tête « Dossiers locaux »
+3. Choisir le dossier local à migrer, puis le répertoire racine cible sur le stockage externe
+4. AppPorts utilise `racine cible/nom du dossier local` comme destination externe, enregistre la configuration et démarre la migration
+
+Pour éviter les copies récursives, la migration de répertoires système ou la prise en charge d'un mauvais chemin, ces vérifications sont appliquées :
+
+- Le dossier local doit se trouver dans le dossier personnel de l'utilisateur actuel et ne peut pas être tout le dossier personnel
+- Le chemin local et ses chemins parents ne doivent pas être des liens symboliques
+- Le dossier local ne doit pas chevaucher un répertoire de données ou une entrée de migration déjà gérés
+- La racine cible externe doit être un dossier et ne doit pas se trouver dans le dossier personnel de l'utilisateur actuel
+- La destination externe finale ne doit pas être dans le dossier local, et le dossier local ne doit pas être dans la destination externe finale
+
+Après la migration, le panneau local affiche l'état du chemin d'origine et le panneau externe affiche l'état de la copie externe. Sélectionnez des éléments dans le panneau externe pour « Re-lier le dossier » ou « Restaurer le dossier ». Supprimer une configuration la retire seulement de la liste de migration ; cela ne supprime pas automatiquement les données réelles.
 
 ## Opérations de migration
 
@@ -109,7 +130,7 @@ Le répertoire est géré par AppPorts, mais le chemin externe n'est pas à l'em
 
 ### Nécessite une re-liaison
 
-Les données sur le stockage externe existent toujours, mais le lien symbolique local est perdu. Cliquer sur « Re-lier » ; AppPorts recréera le lien symbolique.
+Le répertoire de données existe toujours sur le stockage externe, mais le lien symbolique local est perdu. Cliquer sur « Re-lier » ; AppPorts recréera le lien symbolique. La re-liaison s'applique uniquement si la cible externe est encore un répertoire. Si un fichier ordinaire occupe la cible externe, AppPorts arrête l'opération et conserve ce fichier.
 
 ### Lien symbolique existant
 

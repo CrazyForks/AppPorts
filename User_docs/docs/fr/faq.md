@@ -16,6 +16,10 @@ Le support minimum est macOS 12.0 (Monterey). macOS 15.1 (Sequoia) et ultérieur
 
 ## Migration d'applications
 
+### Comment analyser des applications en dehors de /Applications ?
+
+Cliquez sur le bouton « + » dans l'en-tête « Mac Apps Locales » pour ajouter des répertoires d'analyse supplémentaires. C'est utile pour les outils comme JetBrains Toolbox et Steam qui installent des applications dans des emplacements personnalisés. Les répertoires ajoutés sont enregistrés automatiquement et surveillés pour détecter les changements. Après l'ajout, l'en-tête affiche le nombre de répertoires personnalisés ; ouvrez ce menu de compteur pour les consulter ou les supprimer.
+
 ### Que faire si l'application ne s'ouvre pas après la migration ?
 
 1. Confirmer que le stockage externe est connecté et accessible
@@ -54,6 +58,10 @@ Cela dépend du type d'application :
 **macOS 15.1+** : Dans les réglages de l'App Store, activer « Télécharger et installer les grandes applications sur un disque externe », en sélectionnant le même stockage externe qu'AppPorts.
 
 **macOS <15.1** : Dans les réglages d'AppPorts, activer « Migration des applications App Store ». Après la migration manuelle, les mises à jour d'applications nécessitent une re-migration.
+
+### Pourquoi AppPorts signale-t-il des « applications protégées » avant la migration ?
+
+Les applications App Store ou appartenant à root sont généralement protégées par les permissions macOS. AppPorts peut donc ne pas pouvoir supprimer ou remplacer automatiquement la copie locale. Quand cet avertissement apparaît, le chemin le plus sûr consiste à déplacer d'abord l'application vers le stockage externe manuellement dans Finder (macOS demandera un mot de passe administrateur), puis à revenir dans AppPorts pour créer un lien local vers l'application externe. Vous pouvez continuer la migration automatique, mais elle peut échouer faute de permissions.
 
 ### La migration est lente/bloquée. Que faire ?
 

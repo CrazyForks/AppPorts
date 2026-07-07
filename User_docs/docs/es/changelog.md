@@ -4,12 +4,15 @@ outline: deep
 
 # Registro de Cambios
 
-## v1.7.1
+## v1.8.0
 
 ### Nuevas funciones
 
 - Directorios de escaneo local personalizados: el encabezado «Mac Apps Locales» ahora tiene un botón «+» para agregar directorios de escaneo de aplicaciones adicionales. Útil para herramientas como JetBrains Toolbox y Steam que instalan aplicaciones fuera de `/Applications`. Los directorios agregados se guardan y monitorean automáticamente (#48).
 - Sincronización de versión Stub Portal: cuando una aplicación externa se actualiza a través de App Store, la información de versión del Stub Portal local se sincroniza automáticamente y la caché de macOS Launch Services se actualiza. El menú «Abrir con» ya no muestra números de versión obsoletos (#50).
+- Detección de directorios de herramientas para Gradle (`~/.gradle`), datos de desarrollo Android (`~/.android`) y caché Flutter/Dart Pub (`~/.pub-cache`) (#49).
+- Migración de directorios: agregue carpetas de usuario arbitrarias en la pestaña "Migración de Directorios", migre proyectos grandes, modelos, bibliotecas de recursos o cachés de herramientas al almacenamiento externo, y luego revincúlelos o restáurelos (#54).
+- Advertencia de migración para apps protegidas: antes de migrar apps de App Store o apps propiedad de root, AppPorts advierte que la eliminación o sustitución automática puede fallar por permisos y sugiere mover primero la app manualmente en Finder antes de crear un enlace (#55).
 
 ### Mejoras
 
@@ -18,12 +21,18 @@ outline: deep
 - Límite de seguridad para cálculo de tamaño: se agregó un límite de 500,000 archivos a los cálculos de tamaño recursivos.
 - Registro de rastreo de escaneo: se agregó registro TRACE por aplicación al bucle de escaneo.
 - Coincidencia más precisa de directorios de datos: las palabras TLD genéricas como `app`, `com`, `org` ahora se filtran.
+- Detección de revinculación de directorios de herramientas más completa: si falta el directorio local pero sigue existiendo un directorio gestionado en la ubicación canónica del almacenamiento externo, AppPorts lo muestra como "Necesita Revinculación"; al cambiar de almacenamiento externo se actualiza automáticamente el estado.
+- Mejoras de localización y accesibilidad: estados de apps, directorios de datos y directorios personalizados, etiquetas de ordenación/filtro, interruptores de configuración e insignias de estado siguen el idioma seleccionado de forma más consistente y exponen etiquetas de accesibilidad más claras.
+- El tamaño de las apps usa ahora caché a nivel de sesión, reduciendo casos donde vuelve a "Calculando" o desaparece tras actualizar (#55).
+- Rollback de migración de datos más seguro: antes de crear el enlace, AppPorts renombra el origen local como copia de seguridad oculta. Si falla la creación del enlace o la limpieza de la copia, conserva la copia local y la copia externa siempre que sea posible (#54).
 
 ### Correcciones
 
 - Corregido: Trae y aplicaciones similares se escaneaban extremadamente lento.
 - Corregido: la información de versión del Stub Portal no se actualizaba después de actualizaciones de App Store.
 - Corregido: el botón de actualización no activaba la sincronización de versión.
+- Corregido: la revinculación o normalización de directorios de datos podía tratar un archivo normal externo como directorio; ahora los archivos normales se rechazan y se conservan.
+- Corregido: cuerpos de diálogos multilínea podían volver a mostrarse en chino en algunos idiomas; se completaron traducciones rusas de la interfaz y el diálogo del sistema "almacenamiento externo no conectado" de Stub Portal ahora sigue el idioma del sistema (#55).
 
 ## v1.7.0
 

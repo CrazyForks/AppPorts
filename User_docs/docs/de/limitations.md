@@ -21,6 +21,7 @@ outline: deep
 |----------|:---:|:---:|
 | App-Migration (Stub Portal) | ✓ | ✓ |
 | Datenverzeichnismigration | ✓ | ✓ |
+| Verzeichnismigration (benutzerdefinierte Ordner) | ✓ | ✓ |
 | Code-Signatur-Verwaltung | ✓ | ✓ |
 | App Store-App-Migration auf externes Laufwerk | ✗ | ✓ |
 | App Store-App In-Place-Update auf externem Laufwerk | ✗ | ✓ |
@@ -43,6 +44,10 @@ macOS-Versionen vor 15.1 (Sequoia) unterstützen die App Store-App-Installation 
 | iOS-App (Mac-Version) | ✓ | ✓ | ✓ | Verwendet iOS Stub Portal |
 | System-Apps | ✗ | — | — | SIP-Schutz; kann nicht migriert werden |
 
+::: warning ⚠️ Migration geschützter Apps
+App Store-Apps oder root-eigene Apps können durch macOS-Berechtigungen blockiert werden, sodass AppPorts die lokale Kopie nicht automatisch löschen oder ersetzen kann. Wenn die Warnung für geschützte Apps erscheint, verschieben Sie die App zuerst manuell im Finder auf den externen Speicher und erstellen Sie danach in AppPorts einen lokalen Link.
+:::
+
 ### Nach Datenverzeichnistyp
 
 | Datenverzeichnistyp | Migration | Risiko |
@@ -54,10 +59,15 @@ macOS-Versionen vor 15.1 (Sequoia) unterstützen die App Store-App-Installation 
 | `~/Library/Caches/` | ✓ | Niedrig — Caches sind wiederherstellbar |
 | `~/Library/Logs/` | ✓ | Niedrig — nur Protokolldateien |
 | `~/Library/WebKit/` | ✓ | Mittel — WebKit lokaler Speicher |
-| `~/Library/HTTPStorages/` | ✓ | Niedrig | Netzwerk-Sitzungsspeicher |
-| `~/Library/Application Scripts/` | ✓ | Niedrig | Erweiterungsskripte |
-| `~/Library/Saved Application State/` | ✓ | Niedrig | Fensterzustandswiederherstellung |
-| `~/.npm`, `~/.m2` usw. Dot-Folder | ✓ | Niedrig | Entwicklungstool-Caches |
+| `~/Library/HTTPStorages/` | ✓ | Niedrig — Netzwerk-Sitzungsspeicher |
+| `~/Library/Application Scripts/` | ✓ | Niedrig — Erweiterungsskripte |
+| `~/Library/Saved Application State/` | ✓ | Niedrig — Fensterzustandswiederherstellung |
+| `~/.npm`, `~/.m2` usw. Dot-Folder | ✓ | Niedrig — Entwicklungstool-Caches |
+| Benutzerdefinierte Ordner im Benutzerordner | ✓ | Abhängig vom Inhalt — schließen Sie vor der Migration Apps oder Tools, die aktiv schreiben |
+
+::: warning ⚠️ Umfang benutzerdefinierter Verzeichnisse
+Die Verzeichnismigration ist für echte Ordner im Benutzerordner gedacht. Dateien, Symlinks, Pfade innerhalb des externen Ziels, Systemverzeichnisse oder Pfade, die sich mit bereits verwalteten Elementen überschneiden, können nicht ausgewählt werden.
+:::
 
 ## Nicht-migrierbare Inhalte
 

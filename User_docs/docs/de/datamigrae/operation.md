@@ -35,7 +35,28 @@ AppPorts kann automatisch Dot-Folders erkennen, die von gängigen Entwicklungsto
 2. Die Seite listet alle erkannten Tool-Verzeichnisse mit ihren Größen auf
 3. Jedes Verzeichnis zeigt ein Prioritäts-Badge (recommended/optional) und den Status
 
+Wenn ein lokales Tool-Verzeichnis fehlt, aber der kanonische Ort auf dem ausgewählten externen Speicher noch ein von AppPorts verwaltetes Verzeichnis enthält, erscheint der Eintrag als „Neuverlinkung erforderlich". Beim Wechsel des externen Speichers scannt AppPorts die Tool-Verzeichnisse erneut und aktualisiert diesen Status. Normale Dateien werden nicht als neu verlinkbare Verzeichnisse behandelt.
+
 Für die vollständige unterstützte Liste siehe [Tool-Verzeichnis-Erkennung](/de/datamigrae/tools).
+
+## Verzeichnismigration (benutzerdefinierte Ordner)
+
+Der Tab „Verzeichnismigration" migriert beliebige Benutzerordner. Das ist nützlich für große Projekte, Modelle, Asset-Bibliotheken oder Tool-Caches, die in den externen Speicher verschoben werden sollen.
+
+1. Wechseln Sie im Hauptfenster zu „Verzeichnismigration"
+2. Klicken Sie im Header „Lokale Ordner" auf den „+"-Button
+3. Wählen Sie den lokalen Ordner und anschließend das Ziel-Stammverzeichnis im externen Speicher
+4. AppPorts verwendet `Zielstamm/lokaler Ordnername` als externes Ziel, speichert die Konfiguration und startet die Migration
+
+Um rekursive Kopien, Systemverzeichnis-Migration oder die Übernahme falscher Pfade zu vermeiden, gelten diese Prüfungen:
+
+- Der lokale Ordner muss unter dem Home-Verzeichnis des aktuellen Benutzers liegen und darf nicht das gesamte Home-Verzeichnis sein
+- Der lokale Pfad und seine übergeordneten Pfade dürfen keine symbolischen Links sein
+- Der lokale Ordner darf sich nicht mit bereits verwalteten Datenverzeichnissen oder Verzeichnismigrationseinträgen überschneiden
+- Das externe Ziel-Stammverzeichnis muss ein Ordner sein und darf nicht im Home-Verzeichnis des aktuellen Benutzers liegen
+- Das finale externe Ziel darf nicht im lokalen Ordner liegen, und der lokale Ordner darf nicht im finalen externen Ziel liegen
+
+Nach der Migration zeigt der lokale Bereich den Status des ursprünglichen Pfads, der externe Bereich den Status der externen Kopie. Wählen Sie Einträge im externen Bereich aus, um „Ordner neu verlinken" oder „Ordner wiederherstellen" auszuführen. Das Entfernen einer Konfiguration löscht nur den Eintrag aus der Migrationsliste; echte Daten werden nicht automatisch gelöscht.
 
 ## Migrationsvorgänge
 
@@ -109,7 +130,7 @@ Das Verzeichnis wird von AppPorts verwaltet, aber der externe Pfad befindet sich
 
 ### Neuverlinkung erforderlich
 
-Externe Speicherdaten sind noch vorhanden, aber der lokale symbolische Link ist verloren. Klicken Sie auf „Neuverlinken"; AppPorts erstellt den symbolischen Link neu.
+Das Datenverzeichnis ist auf dem externen Speicher noch vorhanden, aber der lokale symbolische Link ist verloren. Klicken Sie auf „Neuverlinken"; AppPorts erstellt den symbolischen Link neu. Neuverlinkung gilt nur, wenn das externe Ziel weiterhin ein Verzeichnis ist. Wenn eine normale Datei das externe Ziel belegt, stoppt AppPorts den Vorgang und lässt die Datei unverändert.
 
 ### Vorhandener Soft Link
 

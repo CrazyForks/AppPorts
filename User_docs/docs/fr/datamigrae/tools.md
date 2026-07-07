@@ -22,6 +22,9 @@ AppPorts peut détecter automatiquement les répertoires de données (dot-folder
 |-------|--------|----------|-------------|
 | npm | `~/.npm` | recommended | Cache local du gestionnaire de packages Node.js |
 | Maven | `~/.m2` | recommended | Dépôt de dépendances Java Maven |
+| Gradle | `~/.gradle` | recommended | Cache de build, Wrapper et données de dépendances Gradle |
+| Données de développement Android | `~/.android` | recommended | Configuration et caches Android, ADB et émulateur |
+| Flutter/Dart Pub | `~/.pub-cache` | recommended | Cache de packages Pub pour Dart et Flutter |
 | Bun | `~/.bun` | recommended | Runtime JavaScript et cache Bun |
 | Conda | `~/.conda` | recommended | Données d'environnement Anaconda/Miniconda |
 | Composer | `~/.composer` | optional | Packages globaux PHP Composer |

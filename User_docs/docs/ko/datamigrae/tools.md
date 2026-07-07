@@ -22,6 +22,9 @@ AppPorts는 사용자의 홈 디렉토리에 있는 일반적인 개발 도구, 
 |------|------|----------|------|
 | npm | `~/.npm` | recommended | Node.js 패키지 관리자 로컬 캐시 |
 | Maven | `~/.m2` | recommended | Java Maven 의존성 저장소 |
+| Gradle | `~/.gradle` | recommended | Gradle 빌드 캐시, Wrapper 및 의존성 데이터 |
+| Android 개발 데이터 | `~/.android` | recommended | Android, ADB 및 에뮬레이터 설정과 캐시 데이터 |
+| Flutter/Dart Pub | `~/.pub-cache` | recommended | Dart 및 Flutter Pub 패키지 캐시 |
 | Bun | `~/.bun` | recommended | Bun JavaScript 런타임 및 캐시 |
 | Conda | `~/.conda` | recommended | Anaconda/Miniconda 환경 데이터 |
 | Composer | `~/.composer` | optional | PHP Composer 글로벌 패키지 |

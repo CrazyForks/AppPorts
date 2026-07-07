@@ -14,8 +14,9 @@ Data directory migration uses the **Whole Symlink** strategy:
 
 1. Copy the entire original local directory to external storage
 2. Write managed link metadata (`.appports-link-metadata.plist`) to the external directory
-3. Delete the original local directory
+3. Rename the original local directory to a hidden safety backup on the same volume
 4. Create a symbolic link at the original path pointing to the external copy
+5. Clean up the local safety backup after the symbolic link is created successfully
 
 ```
 ~/Library/Application Support/SomeApp
@@ -34,11 +35,13 @@ flowchart TD
     C -->|No conflict| E[Copy to external storage]
     D --> E
     E --> F[Write managed link metadata]
-    F --> G[Delete local directory]
-    G -->|Failed| H[Rollback: delete external copy]
+    F --> G[Rename local directory to safety backup]
+    G -->|Failed| H[Keep external copy and stop]
     G -->|Success| I[Create symbolic link]
-    I -->|Failed| J[Emergency rollback: copy back to local]
-    I -->|Success| K[Migration complete]
+    I -->|Failed| J[Restore local safety backup and keep external copy]
+    I -->|Success| K[Clean local safety backup]
+    K -->|Success| L[Migration complete]
+    K -->|Failed| M[Migration complete; safety backup remains]
 ```
 
 ## Managed Link Metadata
@@ -56,6 +59,8 @@ AppPorts writes a `.appports-link-metadata.plist` file in the external directory
 This metadata is used during scanning to distinguish AppPorts-managed links from user-created symbolic links, and supports automatic recovery when migration is interrupted.
 
 Automatic recovery uses strict matching. When the external target already exists, AppPorts only treats it as recoverable if `schemaVersion`, `managedBy`, `sourcePath`, `destinationPath`, and `dataDirType` all match the current operation. A real directory without matching metadata is treated as a conflict; AppPorts no longer recovers or takes over based on similar directory size.
+
+Relinking and normalization only operate on directories. AppPorts rejects external regular files instead of relinking or moving them as data directories, preventing a file from being replaced by a local symbolic link.
 
 ## Supported Data Directory Types
 
@@ -89,7 +94,8 @@ Each critical step in the migration process includes rollback mechanisms:
 
 - **Copy failure**: No further actions taken; clean up copied external files
 - **Destination conflict**: If the external target already contains a real directory without matching metadata, migration stops and leaves both sides untouched
-- **Delete local directory failure**: Delete external copy, restore original state
-- **Create symbolic link failure**: Copy data from external back to local, delete external copy
+- **Move to local safety backup failure**: Stop migration and keep the external copy; the local source is not deleted
+- **Create symbolic link failure**: Restore the local safety backup to the original path when possible, and keep the external copy to avoid losing both sides
+- **Safety backup cleanup failure**: Migration is still considered complete; a `.appports-migration-backup-*` folder remains locally and can be removed manually after verification
 
 This design ensures no data loss and consistent system state in the event of failure at any stage.

@@ -4,12 +4,15 @@ outline: deep
 
 # Changelog
 
-## v1.7.1
+## v1.8.0
 
 ### Neue Funktionen
 
 - Benutzerdefinierte lokale Scan-Verzeichnisse: Der „Mac Lokale Apps"-Header hat jetzt einen „+"-Button zum Hinzufügen zusätzlicher lokaler App-Scan-Verzeichnisse. Nützlich für Tools wie JetBrains Toolbox und Steam, die Apps außerhalb von `/Applications` installieren. Hinzugefügte Verzeichnisse werden gespeichert und automatisch überwacht (#48).
 - Stub Portal Versions-Synchronisierung: Wenn eine externe App über den App Store aktualisiert wird, werden die Versionsinformationen des lokalen Stub Portals automatisch synchronisiert und der macOS Launch Services-Cache aktualisiert. Das Menü „Öffnen mit" zeigt keine veralteten Versionsnummern mehr an (#50).
+- Tool-Verzeichnis-Erkennung für Gradle (`~/.gradle`), Android-Entwicklungsdaten (`~/.android`) und Flutter/Dart-Pub-Cache (`~/.pub-cache`) hinzugefügt (#49).
+- Verzeichnismigration hinzugefügt: Beliebige Benutzerordner können im Tab „Verzeichnismigration" hinzugefügt, große Projekte, Modelle, Asset-Bibliotheken oder Tool-Caches in externen Speicher migriert und später neu verlinkt oder wiederhergestellt werden (#54).
+- Warnung für geschützte Apps hinzugefügt: Vor der Migration von App Store-Apps oder root-eigenen Apps warnt AppPorts, dass automatisches Löschen oder Ersetzen an Berechtigungen scheitern kann, und empfiehlt, die App zuerst manuell im Finder zu verschieben und danach einen Link zu erstellen (#55).
 
 ### Verbesserungen
 
@@ -18,12 +21,18 @@ outline: deep
 - Sicherheitslimit für die Verzeichnisgrößenberechnung: Ein Limit von 500.000 Dateien wurde hinzugefügt.
 - Scan-Protokollierung: Per-App-TRACE-Protokollierung wurde hinzugefügt.
 - Präzisere Datenverzeichnis-Suche: Generische TLD-Wörter wie `app`, `com`, `org` werden jetzt gefiltert.
+- Vollständigere Neuverlinkungs-Erkennung für Tool-Verzeichnisse: Wenn das lokale Tool-Verzeichnis fehlt, aber am kanonischen externen Speicherort noch ein verwaltetes Verzeichnis existiert, zeigt AppPorts „Neuverlinkung erforderlich" an; beim Wechsel des externen Speichers wird der Status automatisch aktualisiert.
+- Verbesserte Lokalisierung und Barrierefreiheit: App-, Datenverzeichnis- und benutzerdefinierte Verzeichnisstatus, Sortier-/Filterbeschriftungen, Einstellungsschalter und Status-Badges folgen der gewählten Sprache konsistenter und bieten klarere Accessibility-Labels.
+- App-Größen verwenden jetzt einen sitzungsweiten Cache, wodurch Fälle reduziert werden, in denen Größen nach dem Aktualisieren wieder als „Berechnung läuft" erscheinen oder verschwinden (#55).
+- Sichererer Rollback bei Datenmigration: Vor dem Erstellen des Links benennt AppPorts die lokale Quelle in eine versteckte Sicherheitskopie um. Wenn Link-Erstellung oder Backup-Bereinigung fehlschlagen, bleiben lokale Sicherung und externe Kopie nach Möglichkeit erhalten (#54).
 
 ### Behoben
 
 - Behoben: Trae und ähnliche Apps wurden extrem langsam gescannt.
 - Behoben: Stub Portal-Versionsinformationen wurden nach App Store-Updates nicht aktualisiert.
 - Behoben: Der Aktualisierungsbutton löste keine Versions-Synchronisierung aus.
+- Behoben: Datenverzeichnis-Neuverlinkung oder -Normalisierung konnte eine externe normale Datei als Verzeichnis behandeln; normale Dateien werden jetzt zurückgewiesen und unverändert gelassen.
+- Behoben: Mehrzeilige Dialogtexte konnten in manchen Sprachen auf Chinesisch zurückfallen; russische UI-Übersetzungen wurden ergänzt, und der Stub Portal-Systemdialog „externer Speicher nicht verbunden" folgt jetzt der Systemsprache (#55).
 
 ## v1.7.0
 

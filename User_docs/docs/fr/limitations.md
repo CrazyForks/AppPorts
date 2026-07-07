@@ -21,6 +21,7 @@ outline: deep
 |----------------|:---:|:---:|
 | Migration d'applications (Stub Portal) | ✓ | ✓ |
 | Migration des répertoires de données | ✓ | ✓ |
+| Migration de répertoires (dossiers personnalisés) | ✓ | ✓ |
 | Gestion des signatures de code | ✓ | ✓ |
 | Migration d'applications App Store vers disque externe | ✗ | ✓ |
 | Mise à jour in situ d'applications App Store sur disque externe | ✗ | ✓ |
@@ -43,6 +44,10 @@ Les versions macOS antérieures à 15.1 (Sequoia) ne supportent pas l'installati
 | Application iOS (version Mac) | ✓ | ✓ | ✓ | Utilise iOS Stub Portal |
 | Applications système | ✗ | — | — | Protection SIP ; ne peut pas être migrée |
 
+::: warning ⚠️ Migration des applications protégées
+Les applications App Store ou appartenant à root peuvent être bloquées par les permissions macOS, empêchant AppPorts de supprimer ou remplacer automatiquement la copie locale. Quand l'avertissement d'application protégée apparaît, déplacez d'abord l'application vers le stockage externe manuellement dans Finder, puis revenez dans AppPorts pour créer un lien local.
+:::
+
 ### Par type de répertoire de données
 
 | Type de répertoire de données | Migration | Risque |
@@ -58,6 +63,11 @@ Les versions macOS antérieures à 15.1 (Sequoia) ne supportent pas l'installati
 | `~/Library/Application Scripts/` | ✓ | Faible — scripts d'extension |
 | `~/Library/Saved Application State/` | ✓ | Faible — restauration de l'état des fenêtres |
 | `~/.npm`, `~/.m2` etc. dot-folder | ✓ | Faible — caches d'outils de développement |
+| Dossiers personnalisés dans le dossier de départ de l'utilisateur | ✓ | Dépend du contenu — fermez les applications ou outils qui écrivent activement avant la migration |
+
+::: warning ⚠️ Portée des répertoires personnalisés
+La migration de répertoires concerne les dossiers réels dans le dossier de départ de l'utilisateur. Elle ne peut pas sélectionner des fichiers, des liens symboliques, des chemins dans la cible externe, des répertoires système ni des chemins qui se chevauchent avec des éléments déjà gérés.
+:::
 
 ## Contenu non migrable
 
